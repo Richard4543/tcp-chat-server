@@ -1,0 +1,47 @@
+name: CI
+
+# Runs on every pull request, and on every push to main.
+# The pull_request trigger is the one that matters: it's what branch protection
+# requires to be green before a merge is allowed.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build and test (JDK 17)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          # Caches ~/.m2 between runs so builds don't re-download the internet.
+          cache: 'maven'
+
+      # -B is "batch mode": no interactive prompts, no ANSI colour codes in logs.
+      # `verify` runs compile + test + package — one step further than `test`,
+      # so packaging errors are caught here rather than at release time.
+      - name: Build and test
+        run: mvn -B verify
+
+      # Makes test results readable in the PR without digging through raw logs.
+      # if: always() means it still publishes when the build FAILED, which is
+      # exactly when you most want to see which test broke.
+      - name: Publish test results
+        uses: mikepenz/action-junit-report@v5
+        if: always()
+        with:
+          report_paths: '**/target/surefire-reports/TEST-*.xml'
+          detailed_summary: true
+          include_passed: false
+          # Don't fail the job merely because no tests exist yet (early tickets).
+          fail_on_failure: false
+          require_tests: false

@@ -1,0 +1,18 @@
+# Keeps formatting consistent regardless of editor or machine.
+# IntelliJ, VS Code and most editors read this natively.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.md]
+# Trailing whitespace is significant in Markdown (two spaces = line break).
+trim_trailing_whitespace = false
